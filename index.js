@@ -272,14 +272,14 @@ class mqtt_instance extends instance_skel {
 				label: 'Publish Message',
 				options: [
 					{
-						type: 'textinput',
+						type: 'textwithvariables',
 						label: 'Topic',
 						id: 'topic',
 						default: '',
 						width: 12,
 					},
 					{
-						type: 'textinput',
+						type: 'textwithvariables',
 						label: 'Payload',
 						id: 'payload',
 						default: '',
@@ -348,9 +348,18 @@ class mqtt_instance extends instance_skel {
 	}
 
 	_publishMessage(topic, payload, qos, retain) {
-		this.debug('Sending MQTT message', [topic, payload])
-
-		this.mqttClient.publish(topic, payload, { qos: qos, retain: retain })
+		var parsedTopic
+		var parsedPayload
+		
+		this.system.emit('variable_parse', topic, function (value) {
+ 				parsedTopic = value
+ 			})
+ 		this.system.emit('variable_parse', payload, function (value) {
+ 				parsedPayload = value
+ 			})
+ 			
+		this.debug('Sending MQTT message', [parsedTopic, parsedPayload])
+		this.mqttClient.publish(parsedTopic, parsedPayload, { qos: qos, retain: retain })
 	}
 
 	_handleMqttMessage(topic, message) {
